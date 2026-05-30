@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Сгенерирован новый QR-токен:", newToken);
                 }
             }
-        }, 3000);
+        }, 7000);
     }
 
     function stopQrRotation() {
