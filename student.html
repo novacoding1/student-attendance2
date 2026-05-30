@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет Студента | Система учета посещаемости</title>
+    
+    <!-- Подключение библиотеки HTML5-QRCode для сканирования камеры -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" referrerpolicy="no-referrer"></script>
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Шапка сайта (Header) -->
+    <header class="header-glass" id="main-header" style="display: none;">
+        <div class="logo">
+            <span>🎓</span> SMART<span>ATTEND</span>
+        </div>
+        <div class="header-user-badge">
+            <div class="user-info-text">
+                <span class="name" id="header-user-name">Иванов И. И.</span>
+                <span class="role" id="header-user-group">Группа: ИС-21</span>
+            </div>
+            <button class="btn btn-secondary" id="logout-btn" style="padding: 8px 16px; font-size: 0.85rem;">Выйти</button>
+        </div>
+    </header>
+
+    <!-- Раздел Авторизации (Вход / Регистрация) -->
+    <main class="auth-wrapper" id="auth-section">
+        <div class="glass-card auth-card fade-in">
+            <div class="auth-header">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🎓</div>
+                <h2>Кабинет Студента</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Зарегистрируйтесь или войдите для отметки на лекциях</p>
+            </div>
+
+            <!-- Табы переключения -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login-btn">Войти</button>
+                <button class="auth-tab" id="tab-register-btn">Регистрация</button>
+            </div>
+
+            <!-- Форма входа -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Логин (Username)</label>
+                    <input type="text" id="login-username" class="input-control" placeholder="Введите ваш логин" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" class="input-control" placeholder="Введите ваш пароль" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-student" style="width: 100%; margin-top: 10px;">Войти в кабинет</button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="reg-lastname">Фамилия</label>
+                    <input type="text" id="reg-lastname" class="input-control" placeholder="Например: Иванов" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-firstname">Имя</label>
+                    <input type="text" id="reg-firstname" class="input-control" placeholder="Например: Иван" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-patronymic">Отчество</label>
+                    <input type="text" id="reg-patronymic" class="input-control" placeholder="Например: Иванович" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-group">Группа</label>
+                    <input type="text" id="reg-group" class="input-control" placeholder="Например: ИС-21" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-username">Придумайте Логин</label>
+                    <input type="text" id="reg-username" class="input-control" placeholder="Латинскими буквами" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Придумайте Пароль</label>
+                    <input type="password" id="reg-password" class="input-control" placeholder="Минимум 4 символа" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-student" style="width: 100%; margin-top: 10px;">Зарегистрироваться</button>
+            </form>
+            
+            <div class="auth-footer-link">
+                <p>Вы преподаватель? <a href="teacher.html" style="color: var(--clr-teacher);">Кабинет Учителя &rarr;</a></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Основной кабинет Студента (После авторизации) -->
+    <main class="student-container" id="dashboard-section" style="display: none;">
+        
+        <!-- Левая колонка - Профиль & Статистика -->
+        <aside class="glass-card student-profile-card fade-in">
+            <div class="student-avatar" id="student-avatar-letter">И</div>
+            <h3 id="student-full-name">Иванов Иван Иванович</h3>
+            <span class="student-group-tag" id="student-group-name">ГРУППА ИС-21</span>
+            
+            <div class="student-stats-container">
+                <h4 style="margin-bottom: 20px; font-size: 0.95rem; text-align: center; color: var(--text-secondary);">ОБЩАЯ ПОСЕЩАЕМОСТЬ</h4>
+                
+                <!-- Анимированный SVG-график посещаемости -->
+                <div id="attendance-chart-container"></div>
+                
+                <div class="mini-stats-grid">
+                    <div class="mini-stat-card">
+                        <span class="value success" id="stat-attended">0</span>
+                        <span class="label">Присутствовал</span>
+                    </div>
+                    <div class="mini-stat-card">
+                        <span class="value danger" id="stat-missed">0</span>
+                        <span class="label">Пропущено</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Правая колонка - Сканер & Таблица посещаемости -->
+        <section class="fade-in" style="display: flex; flex-direction: column; gap: 30px;">
+            
+            <!-- Баннер Быстрого Действия (Сканирование QR) -->
+            <div class="glass-card" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(15, 23, 42, 0.55)); border-color: rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; padding: 30px;">
+                <div>
+                    <h2 style="margin-bottom: 8px;">Отметиться на лекции</h2>
+                    <p style="color: var(--text-secondary); max-width: 450px; font-size: 0.95rem;">Нажмите на кнопку ниже, чтобы запустить камеру, наведите на QR-код лекции преподавателя и мгновенно подтвердите свое присутствие.</p>
+                </div>
+                <button class="btn btn-student btn-lg" id="scan-qr-trigger-btn" style="padding: 16px 32px; font-size: 1.1rem; border-radius: 14px;">
+                    📷 Сканировать QR-код
+                </button>
+            </div>
+
+            <!-- Таблица Истории Посещаемости -->
+            <div class="glass-card">
+                <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <span>📅</span> Моя история посещений
+                </h3>
+                
+                <div class="table-wrapper">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Предмет</th>
+                                <th>День недели</th>
+                                <th>Дата</th>
+                                <th>Время проведения</th>
+                                <th>Время отметки</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-attendance-tbody">
+                            <!-- Заполняется динамически через JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="attendance-empty-state" class="empty-placeholder" style="display: none;">
+                    <span class="icon">📭</span>
+                    <p>История посещаемости пуста. Отметьтесь на первом занятии!</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- МОДАЛЬНОЕ ОКНО КАМЕРЫ (СКАНИРОВАНИЕ QR) -->
+    <!-- ========================================== -->
+    <div class="scanner-modal" id="scanner-modal">
+        <div class="scanner-content">
+            <button class="scanner-close-btn" id="scanner-close-btn">&times;</button>
+            <h3 class="scanner-modal-title">Сканирование QR-кода</h3>
+            <p class="scanner-modal-subtitle">Поместите QR-код преподавателя в рамку видоискателя для считывания</p>
+            
+            <div class="scanner-camera-box">
+                <!-- Контейнер для HTML5-QRCode видео -->
+                <div id="camera-reader-element"></div>
+                
+                <!-- Декоративный интерфейс поверх камеры -->
+                <div class="scanner-overlay-frame">
+                    <div class="scanner-target-square">
+                        <div class="scanner-laser-line"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 20px; text-align: center;">Не забудьте разрешить доступ к камере при запросе браузера</p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- МОДАЛЬНОЕ ОКНО УСПЕШНОЙ ОТМЕТКИ -->
+    <!-- ========================================== -->
+    <div class="dialog-modal" id="success-modal">
+        <div class="glass-card dialog-card success-checkmark-card">
+            <div class="success-icon-circle">✓</div>
+            <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Вы успешно отмечены!</h3>
+            <p id="success-modal-class-details" style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4;">
+                Предмет: Английский язык (Лекция)<br>
+                Время: 14:02
+            </p>
+            <button class="btn btn-student" id="success-modal-close-btn" style="width: 100%;">Отлично</button>
+        </div>
+    </div>
+
+    <!-- Общие базы данных, компоненты и основное приложение студента -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/database.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app-student.js"></script>
+</body>
+</html>

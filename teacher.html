@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель Преподавателя | Система учета посещаемости</title>
+    
+    <!-- Подключение QRious из CDN для оффлайн генерации QR-кодов на холсте -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" referrerpolicy="no-referrer"></script>
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Шапка сайта (Header) -->
+    <header class="header-glass" id="main-header" style="display: none;">
+        <div class="logo">
+            <span>🎓</span> SMART<span>ATTEND</span> <small style="font-size: 0.65rem; background: var(--clr-teacher); color: #fff; padding: 2px 8px; border-radius: 10px; margin-left: 5px; text-transform: uppercase;">Teacher</small>
+        </div>
+        <div class="header-user-badge">
+            <div class="user-info-text">
+                <span class="name" id="header-teacher-name">Смирнов Д. А.</span>
+                <span class="role">Преподаватель</span>
+            </div>
+            <button class="btn btn-secondary" id="logout-btn" style="padding: 8px 16px; font-size: 0.85rem;">Выйти</button>
+        </div>
+    </header>
+
+    <!-- Раздел Авторизации (Вход / Регистрация) -->
+    <main class="auth-wrapper" id="auth-section">
+        <div class="glass-card auth-card fade-in">
+            <div class="auth-header">
+                <div style="font-size: 3rem; margin-bottom: 10px;">👨‍🏫</div>
+                <h2>Кабинет Преподавателя</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Создавайте лекции, генерируйте QR-коды и управляйте отметками</p>
+            </div>
+
+            <!-- Табы переключения -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login-btn">Войти</button>
+                <button class="auth-tab" id="tab-register-btn">Регистрация</button>
+            </div>
+
+            <!-- Форма входа -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Логин преподавателя</label>
+                    <input type="text" id="login-username" class="input-control" placeholder="Введите логин" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" class="input-control" placeholder="Введите пароль" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-teacher" style="width: 100%; margin-top: 10px;">Войти в кабинет</button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="reg-lastname">Фамилия</label>
+                    <input type="text" id="reg-lastname" class="input-control" placeholder="Например: Смирнов" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-firstname">Имя</label>
+                    <input type="text" id="reg-firstname" class="input-control" placeholder="Например: Дмитрий" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-patronymic">Отчество</label>
+                    <input type="text" id="reg-patronymic" class="input-control" placeholder="Например: Алексеевич" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-username">Создайте Логин</label>
+                    <input type="text" id="reg-username" class="input-control" placeholder="Например: teacher123" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Создайте Пароль</label>
+                    <input type="password" id="reg-password" class="input-control" placeholder="Минимум 4 символа" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-teacher" style="width: 100%; margin-top: 10px;">Зарегистрироваться</button>
+            </form>
+            
+            <div class="auth-footer-link">
+                <p>Вы студент? <a href="student.html" style="color: var(--clr-student);">Кабинет Студента &rarr;</a></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Основной кабинет Преподавателя (После авторизации) -->
+    <main class="teacher-grid" id="dashboard-section" style="display: none;">
+        
+        <!-- Левый Сайдбар - Управление Предметами & История -->
+        <aside class="teacher-sidebar">
+            <div>
+                <button class="btn btn-teacher" id="add-subject-trigger-btn" style="width: 100%; border-radius: 12px; margin-bottom: 24px; padding: 14px 20px;">
+                    ➕ Добавить предмет
+                </button>
+                
+                <h4 class="sidebar-title">Мои Предметы & Занятия</h4>
+                
+                <!-- Список предметов и истории (динамически через JS) -->
+                <div id="subjects-container-list">
+                    <!-- Заполняется группами предметов, внутри каждой раскрывается история сессий по дням -->
+                </div>
+                
+                <div id="subjects-empty-state" class="empty-placeholder" style="padding: 20px 10px; font-size: 0.85rem;">
+                    <span>📚</span>
+                    <p>Нет предметов. Нажмите кнопку выше для добавления!</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Правая рабочая панель -->
+        <section class="teacher-main fade-in">
+            
+            <!-- Заголовок / Приветствие -->
+            <div class="teacher-welcome-container">
+                <div>
+                    <h2 id="teacher-welcome-title">С возвращением, Дмитрий Алексеевич!</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Управляйте аудиториями, создавайте QR-коды для лекций</p>
+                </div>
+            </div>
+
+            <!-- Лента показателей KPI -->
+            <div class="dashboard-stats-strip">
+                <div class="glass-card stat-card-glow">
+                    <span class="title">Мои предметы</span>
+                    <span class="number" id="kpi-subjects-count">0</span>
+                </div>
+                <div class="glass-card stat-card-glow success">
+                    <span class="title">Всего лекций</span>
+                    <span class="number" id="kpi-sessions-count">0</span>
+                </div>
+                <div class="glass-card stat-card-glow active">
+                    <span class="title">Присутствуют сейчас</span>
+                    <span class="number" id="kpi-present-count">0</span>
+                </div>
+            </div>
+
+            <!-- Главный блок выбранного занятия -->
+            <div id="active-session-workspace" style="display: none;">
+                
+                <!-- QR-код сессии -->
+                <div class="glass-card qr-container-card" id="qr-display-container" style="display: none;">
+                    <div class="qr-box-wrapper">
+                        <canvas id="class-qr-canvas"></canvas>
+                    </div>
+                    <div class="active-lesson-info">
+                        <span class="active-lesson-badge">АКТИВНОЕ ЗАНЯТИЕ</span>
+                        <h2 id="active-lesson-subject-name" style="margin: 4px 0 8px;">Английский язык (Лекция)</h2>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.4;">
+                            📅 <strong>День:</strong> <span id="active-lesson-day">Понедельник</span>, <span id="active-lesson-date">30 мая 2026</span><br>
+                            ⏰ <strong>Начало лекции:</strong> <span id="active-lesson-time">13:45</span>
+                        </p>
+                        <div style="display: flex; gap: 12px; margin-top: 14px;">
+                            <button class="btn btn-teacher" id="fullscreen-qr-btn">🔍 Во весь экран</button>
+                            <button class="btn btn-secondary" id="deactivate-qr-btn">❌ Закрыть занятие</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Шапка таблицы, Сортировка и Фильтрация -->
+                <div class="glass-card">
+                    <div class="table-header-strip">
+                        <div>
+                            <h3 id="table-roster-title" style="margin-bottom: 4px;">Список посещаемости</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem;" id="table-roster-subtitle">Сессия: Понедельник, 30 мая</p>
+                        </div>
+                        
+                        <!-- Блок Управления и Фильтров -->
+                        <div class="table-filter-group">
+                            <button class="btn btn-teacher" id="start-new-session-btn" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 8px;">
+                                🔄 Начать новое занятие (Новый QR)
+                            </button>
+                            
+                            <select id="group-filter-dropdown" class="select-control">
+                                <option value="all">Все группы</option>
+                                <!-- Наполняется динамически -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Таблица студентов -->
+                    <div class="table-wrapper">
+                        <table class="attendance-table" id="roster-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" id="sort-lastname">Фамилия</th>
+                                    <th class="sortable" id="sort-firstname">Имя</th>
+                                    <th class="sortable" id="sort-patronymic">Отчество</th>
+                                    <th class="sortable" id="sort-group">Группа</th>
+                                    <th class="sortable" id="sort-time">Время отметки</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-attendance-tbody">
+                                <!-- Наполняется динамически через JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="roster-empty-state" class="empty-placeholder">
+                        <span class="icon">👥</span>
+                        <p>На этой лекции пока никто не отметился. Покажите QR-код студентам для сканирования!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Подсказка, если предмет не выбран -->
+            <div id="no-subject-selected-workspace" class="glass-card empty-placeholder" style="padding: 100px 20px;">
+                <span class="icon" style="font-size: 4rem;">👈</span>
+                <h3>Добро пожаловать в Кабинет Учителя!</h3>
+                <p style="max-width: 420px; margin: 10px auto 0; color: var(--text-secondary); font-size: 0.95rem;">Выберите предмет в меню слева или добавьте новый, чтобы сгенерировать QR-код лекции и просмотреть статистику посещаемости по дням.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ПРЕДМЕТА -->
+    <!-- ========================================== -->
+    <div class="dialog-modal" id="add-subject-modal">
+        <div class="glass-card dialog-card">
+            <h3 style="margin-bottom: 16px; font-size: 1.3rem;">Добавление предмета</h3>
+            
+            <form id="add-subject-form">
+                <div class="form-group">
+                    <label for="new-subject-name">Название предмета</label>
+                    <input type="text" id="new-subject-name" class="input-control" placeholder="Например: Английский язык (Лекция)" required>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" id="add-subject-cancel-btn">Отмена</button>
+                    <button type="submit" class="btn btn-teacher">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- МОДАЛЬНОЕ ОКНО QR-КОДА ВО ВЕСЬ ЭКРАН -->
+    <!-- ========================================== -->
+    <div class="fullscreen-qr-modal" id="fullscreen-qr-modal">
+        <button class="scanner-close-btn" id="fullscreen-qr-close-btn" style="top: 40px; right: 40px;">&times;</button>
+        
+        <div class="fullscreen-qr-box">
+            <canvas id="fullscreen-qr-canvas"></canvas>
+        </div>
+        
+        <h2 class="fullscreen-title" id="fullscreen-subject-title">Английский язык (Лекция)</h2>
+        <p style="color: var(--text-secondary); font-size: 1.1rem; margin-top: 8px;">
+            Сессия от: <span id="fullscreen-session-details">Понедельник, 30 мая, 13:45</span>
+        </p>
+        <p style="color: var(--clr-success); font-weight: 600; font-size: 0.95rem; margin-top: 14px; background: rgba(16,185,129,0.12); padding: 6px 16px; border-radius: 20px;">
+            📡 Сканируйте код для подтверждения посещаемости
+        </p>
+    </div>
+
+    <!-- Общие базы данных, компоненты и основное приложение преподавателя -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/database.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app-teacher.js"></script>
+</body>
+</html>

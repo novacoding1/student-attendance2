@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMARTATTEND | Система учета посещаемости по QR-кодам</title>
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* Дополнительные стили специально для красивой главной страницы */
+        .landing-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .landing-header {
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .landing-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .landing-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .portals-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @media (min-width: 768px) {
+            .portals-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .portal-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 30px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        /* Цвета для таба Студента */
+        .portal-card.student-card::before {
+            background: var(--clr-student-grad);
+        }
+        .portal-card.student-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.15);
+            transform: translateY(-8px);
+        }
+
+        /* Цвета для таба Преподавателя */
+        .portal-card.teacher-card::before {
+            background: var(--clr-teacher-grad);
+        }
+        .portal-card.teacher-card:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+            box-shadow: 0 15px 40px rgba(14, 165, 233, 0.15);
+            transform: translateY(-8px);
+        }
+
+        .portal-icon {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .portal-card:hover .portal-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .portal-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .portal-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 30px;
+            max-width: 280px;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="landing-container">
+        
+        <!-- Заголовок Лендинга -->
+        <header class="landing-header">
+            <div style="font-size: 4rem; margin-bottom: 16px; display: inline-block; animation: pulseSuccess 2s infinite;">🎓</div>
+            <h1 class="landing-title">SMARTATTEND</h1>
+            <p class="landing-subtitle">Современный облачный сервис учета посещаемости студентов по динамическим QR-кодам в реальном времени</p>
+        </header>
+
+        <!-- Сетка выбора роли (Студент / Преподаватель) -->
+        <div class="portals-grid">
+            
+            <!-- Карточка Студента -->
+            <a href="student.html" class="glass-card portal-card student-card">
+                <div class="portal-icon">📱</div>
+                <div>
+                    <h2 class="portal-name">Кабинет Студента</h2>
+                    <p class="portal-desc">Зарегистрируйтесь, введите группу, запустите камеру для сканирования QR-кода и просматривайте историю посещений.</p>
+                </div>
+                <span class="btn btn-student" style="width: 100%; border-radius: 10px;">Перейти в портал &rarr;</span>
+            </a>
+
+            <!-- Карточка Учителя -->
+            <a href="teacher.html" class="glass-card portal-card teacher-card">
+                <div class="portal-icon">👨‍🏫</div>
+                <div>
+                    <h2 class="portal-name">Панель Преподавателя</h2>
+                    <p class="portal-desc">Создавайте лекции, выводите динамические QR-коды на проектор и контролируйте отметки в реальном времени.</p>
+                </div>
+                <span class="btn btn-teacher" style="width: 100%; border-radius: 10px;">Перейти в портал &rarr;</span>
+            </a>
+
+        </div>
+
+        <footer style="margin-top: 80px; font-size: 0.8rem; color: var(--text-muted);">
+            &copy; 2026 SMARTATTEND. Все права защищены. Работает на облаке Supabase Cloud.
+        </footer>
+
+    </div>
+
+</body>
+</html>
