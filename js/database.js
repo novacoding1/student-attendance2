@@ -170,8 +170,13 @@ const Database = {
     },
 
     getCurrentUser() {
-        const session = sessionStorage.getItem('qr_attend_current_session');
-        return session ? JSON.parse(session) : null;
+        try {
+            const session = sessionStorage.getItem('qr_attend_current_session');
+            return session ? JSON.parse(session) : null;
+        } catch (e) {
+            sessionStorage.removeItem('qr_attend_current_session');
+            return null;
+        }
     },
 
     logout() {
