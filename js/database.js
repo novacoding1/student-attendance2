@@ -12,13 +12,15 @@
 const SUPABASE_URL = 'https://bxgtxtbwiiltabolfcph.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_RQatZXJ0ZXwC3fV9tu9XMg_HN56FOzP';
 
-let supabase = null;
+// Переименовано в supabaseClient, чтобы избежать конфликта имен (Identifier 'supabase' has already been declared)
+// с глобальным объектом 'supabase', который загружает официальная библиотека CDN
+let supabaseClient = null;
 let isSupabaseMode = false;
 
 // Инициализация Supabase
 if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY' && SUPABASE_URL && SUPABASE_KEY) {
     try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         isSupabaseMode = true;
         console.log('☁️ Подключена облачная база данных Supabase!');
     } catch (e) {
@@ -47,7 +49,7 @@ const Database = {
     async registerUser(role, lastName, firstName, patronymic, group, username, password) {
         if (isSupabaseMode) {
             // Проверка логина
-            const { data: existingUser } = await supabase
+            const { data: existingUser } = await supabaseClient
                 .from('users')
                 .select('username')
                 .eq('username', username.trim().toLowerCase())
@@ -68,7 +70,7 @@ const Database = {
                 password: password
             };
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('users')
                 .insert([newUser]);
 
@@ -105,7 +107,7 @@ const Database = {
      */
     async loginUser(role, username, password) {
         if (isSupabaseMode) {
-            const { data: user, error } = await supabase
+            const { data: user, error } = await supabaseClient
                 .from('users')
                 .select('*')
                 .eq('username', username.trim().toLowerCase())
@@ -187,7 +189,7 @@ const Database = {
 
     async getSubjects(teacherId) {
         if (isSupabaseMode) {
-            const { data: subjects } = await supabase
+            const { data: subjects } = await supabaseClient
                 .from('subjects')
                 .select('*')
                 .eq('teacher_id', teacherId);
@@ -206,7 +208,7 @@ const Database = {
     async addSubject(name, teacherId) {
         if (isSupabaseMode) {
             // Проверка названия
-            const { data: existing } = await supabase
+            const { data: existing } = await supabaseClient
                 .from('subjects')
                 .select('id')
                 .eq('name', name.trim())
@@ -223,7 +225,7 @@ const Database = {
                 teacher_id: teacherId
             };
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('subjects')
                 .insert([newSubject]);
 
@@ -268,7 +270,7 @@ const Database = {
 
         if (isSupabaseMode) {
             // Деактивируем прошлые сессии
-            await supabase
+            await supabaseClient
                 .from('sessions')
                 .update({ is_active: false })
                 .eq('subject_id', subjectId);
@@ -283,7 +285,7 @@ const Database = {
                 active_token: initialToken
             };
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('sessions')
                 .insert([newSession]);
 
@@ -324,7 +326,7 @@ const Database = {
         const newToken = sessionId + '_tok_' + Math.random().toString(36).substr(2, 5);
 
         if (isSupabaseMode) {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('sessions')
                 .update({ active_token: newToken })
                 .eq('id', sessionId);
@@ -344,7 +346,7 @@ const Database = {
 
     async getSessions(subjectId) {
         if (isSupabaseMode) {
-            const { data: sessions } = await supabase
+            const { data: sessions } = await supabaseClient
                 .from('sessions')
                 .select('*')
                 .eq('subject_id', subjectId)
@@ -369,7 +371,7 @@ const Database = {
 
     async getSessionById(sessionId) {
         if (isSupabaseMode) {
-            const { data: session } = await supabase
+            const { data: session } = await supabaseClient
                 .from('sessions')
                 .select('*')
                 .eq('id', sessionId)
@@ -398,7 +400,7 @@ const Database = {
 
         if (isSupabaseMode) {
             // Получаем сессию
-            const { data: session } = await supabase
+            const { data: session } = await supabaseClient
                 .from('sessions')
                 .select('*')
                 .eq('id', sessionId)
@@ -417,7 +419,7 @@ const Database = {
             }
 
             // Проверка дубликата отметки
-            const { data: existing } = await supabase
+            const { data: existing } = await supabaseClient
                 .from('attendance')
                 .select('id')
                 .eq('session_id', sessionId)
@@ -438,7 +440,7 @@ const Database = {
                 timestamp: timeStr
             };
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('attendance')
                 .insert([newRecord]);
 
@@ -479,7 +481,7 @@ const Database = {
     async getSessionAttendance(sessionId) {
         if (isSupabaseMode) {
             // Получаем посещения с джоином пользователей
-            const { data: records } = await supabase
+            const { data: records } = await supabaseClient
                 .from('attendance')
                 .select('id, student_id, timestamp, users(*)')
                 .eq('session_id', sessionId);
@@ -519,7 +521,7 @@ const Database = {
     async getStudentAttendance(studentId) {
         if (isSupabaseMode) {
             // Делаем джоин посещений, сессий и предметов
-            const { data: records } = await supabase
+            const { data: records } = await supabaseClient
                 .from('attendance')
                 .select('id, timestamp, sessions(date, time, day_of_week, subjects(name))')
                 .eq('student_id', studentId);
@@ -562,11 +564,11 @@ const Database = {
     async getStudentStats(studentId) {
         if (isSupabaseMode) {
             // Запрашиваем количество сессий и посещений студента
-            const { count: totalSessions } = await supabase
+            const { count: totalSessions } = await supabaseClient
                 .from('sessions')
                 .select('id', { count: 'exact', head: true });
 
-            const { count: attendedSessions } = await supabase
+            const { count: attendedSessions } = await supabaseClient
                 .from('attendance')
                 .select('id', { count: 'exact', head: true })
                 .eq('student_id', studentId);

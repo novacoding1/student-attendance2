@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // В облачном режиме деактивируем сессию в базе
             if (isSupabaseMode) {
-                await supabase
+                await supabaseClient
                     .from('sessions')
                     .update({ is_active: false })
                     .eq('id', selectedSessionId);
