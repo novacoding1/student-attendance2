@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет Студента | Система учета посещаемости</title>
     
+    <!-- Глобальный отслеживатель ошибок в UI для отладки -->
+    <script>
+        window.addEventListener('error', function(e) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.top = '10px';
+            errorDiv.style.left = '10px';
+            errorDiv.style.right = '10px';
+            errorDiv.style.background = 'rgba(244, 63, 94, 0.95)';
+            errorDiv.style.color = '#ffffff';
+            errorDiv.style.padding = '15px';
+            errorDiv.style.borderRadius = '8px';
+            errorDiv.style.zIndex = '99999';
+            errorDiv.style.fontFamily = 'monospace';
+            errorDiv.style.fontSize = '12px';
+            errorDiv.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            errorDiv.innerHTML = '<strong>[JS ERROR]</strong> ' + e.message + ' <br><small style="color:rgba(255,255,255,0.7);">' + e.filename + ':' + e.lineno + '</small>';
+            document.body.appendChild(errorDiv);
+        });
+    </script>
+    
     <!-- Подключение библиотеки HTML5-QRCode для сканирования камеры -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" referrerpolicy="no-referrer"></script>
     
