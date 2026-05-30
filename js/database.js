@@ -47,12 +47,19 @@ const Database = {
      * Регистрация нового пользователя
      */
     async registerUser(role, lastName, firstName, patronymic, group, username, password) {
+        // Защита от undefined и лишних пробелов
+        const cleanLastName = (lastName || '').trim();
+        const cleanFirstName = (firstName || '').trim();
+        const cleanPatronymic = (patronymic || '').trim();
+        const cleanGroup = (group || '').trim();
+        const cleanUsername = (username || '').trim().toLowerCase();
+
         if (isSupabaseMode) {
             // Проверка логина
             const { data: existingUser } = await supabaseClient
                 .from('users')
                 .select('username')
-                .eq('username', username.trim().toLowerCase())
+                .eq('username', cleanUsername)
                 .maybeSingle();
 
             if (existingUser) {
@@ -62,11 +69,11 @@ const Database = {
             const newUser = {
                 id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                 role,
-                last_name: lastName.trim(),
-                first_name: firstName.trim(),
-                patronymic: patronymic.trim(),
-                student_group: role === 'student' ? group.trim() : '',
-                username: username.trim().toLowerCase(),
+                last_name: cleanLastName,
+                first_name: cleanFirstName,
+                patronymic: cleanPatronymic,
+                student_group: role === 'student' ? cleanGroup : '',
+                username: cleanUsername,
                 password: password
             };
 
@@ -80,7 +87,7 @@ const Database = {
         } else {
             // Локальный режим
             const users = this._get('users');
-            const exists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
+            const exists = users.some(u => u.username.toLowerCase() === cleanUsername);
             if (exists) {
                 throw new Error('Пользователь с таким логином уже существует');
             }
@@ -88,11 +95,11 @@ const Database = {
             const newUser = {
                 id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                 role,
-                lastName: lastName.trim(),
-                firstName: firstName.trim(),
-                patronymic: patronymic.trim(),
-                group: role === 'student' ? group.trim() : '',
-                username: username.trim().toLowerCase(),
+                lastName: cleanLastName,
+                firstName: cleanFirstName,
+                patronymic: cleanPatronymic,
+                group: role === 'student' ? cleanGroup : '',
+                username: cleanUsername,
                 password: password
             };
 
@@ -138,7 +145,11 @@ const Database = {
                 username: user.username
             };
             
-            sessionStorage.setItem('qr_attend_current_session', JSON.stringify(sessionUser));
+            try {
+                sessionStorage.setItem('qr_attend_current_session', JSON.stringify(sessionUser));
+            } catch (e) {
+                console.warn('sessionStorage is not accessible', e);
+            }
             return sessionUser;
         } else {
             // Локальный режим
@@ -166,7 +177,11 @@ const Database = {
                 username: user.username
             };
             
-            sessionStorage.setItem('qr_attend_current_session', JSON.stringify(sessionUser));
+            try {
+                sessionStorage.setItem('qr_attend_current_session', JSON.stringify(sessionUser));
+            } catch (e) {
+                console.warn('sessionStorage is not accessible', e);
+            }
             return sessionUser;
         }
     },
@@ -182,7 +197,11 @@ const Database = {
     },
 
     logout() {
-        sessionStorage.removeItem('qr_attend_current_session');
+        try {
+            sessionStorage.removeItem('qr_attend_current_session');
+        } catch (e) {
+            console.warn('sessionStorage is not accessible', e);
+        }
     },
 
     // --- УПРАВЛЕНИЕ ПРЕДМЕТАМИ ---
@@ -202,6 +221,26 @@ const Database = {
         } else {
             const subjects = this._get('subjects');
             return subjects.filter(s => s.teacherId === teacherId);
+        }
+    },
+
+    async getSubjectById(subjectId) {
+        if (isSupabaseMode) {
+            const { data: subject } = await supabaseClient
+                .from('subjects')
+                .select('*')
+                .eq('id', subjectId)
+                .maybeSingle();
+            
+            if (!subject) return null;
+            return {
+                id: subject.id,
+                name: subject.name,
+                teacherId: subject.teacher_id
+            };
+        } else {
+            const subjects = this._get('subjects');
+            return subjects.find(s => s.id === subjectId) || null;
         }
     },
 

@@ -24,6 +24,24 @@
             errorDiv.innerHTML = '<strong>[JS ERROR]</strong> ' + e.message + ' <br><small style="color:rgba(255,255,255,0.7);">' + e.filename + ':' + e.lineno + '</small>';
             document.body.appendChild(errorDiv);
         });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.top = '10px';
+            errorDiv.style.left = '10px';
+            errorDiv.style.right = '10px';
+            errorDiv.style.background = 'rgba(244, 63, 94, 0.95)';
+            errorDiv.style.color = '#ffffff';
+            errorDiv.style.padding = '15px';
+            errorDiv.style.borderRadius = '8px';
+            errorDiv.style.zIndex = '99999';
+            errorDiv.style.fontFamily = 'monospace';
+            errorDiv.style.fontSize = '12px';
+            errorDiv.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            errorDiv.innerHTML = '<strong>[DATABASE/PROMISE ERROR]</strong> ' + (e.reason ? e.reason.message || e.reason : 'Unhandled Rejection') + (e.reason && e.reason.stack ? '<br><pre style="white-space:pre-wrap;font-size:10px;margin-top:5px;opacity:0.8;font-family:monospace;">' + e.reason.stack + '</pre>' : '');
+            document.body.appendChild(errorDiv);
+        });
     </script>
     
     <!-- Подключение QRious из CDN для оффлайн генерации QR-кодов на холсте -->
@@ -88,7 +106,7 @@
                 </div>
                 <div class="form-group">
                     <label for="reg-patronymic">Отчество</label>
-                    <input type="text" id="reg-patronymic" class="input-control" placeholder="Например: Алексеевич" required>
+                    <input type="text" id="reg-patronymic" class="input-control" placeholder="Например: Алексеевич (необязательно)">
                 </div>
                 <div class="form-group">
                     <label for="reg-username">Создайте Логин</label>

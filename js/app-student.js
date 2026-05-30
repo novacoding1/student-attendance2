@@ -244,12 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let subjectName = 'Неизвестный предмет';
             if (session) {
-                const subjects = await Database.getSubjects(currentUser.id); // Или любой teacherId, в облачном режиме запросим из БД
-                // В облачном режиме мы можем вытащить имя предмета напрямую, либо сэмулировать
-                const sessionWithSubject = await Database.getSessionById(session.id);
-                // Для простоты подгрузим все предметы
-                const dbSubjects = Database._get('subjects');
-                const sub = dbSubjects.find(s => s.id === session.subjectId);
+                const sub = await Database.getSubjectById(session.subjectId);
                 if (sub) subjectName = sub.name;
             }
             
